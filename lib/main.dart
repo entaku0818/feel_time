@@ -17,10 +17,17 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final timerState = Provider.of<TimerState>(context);
     return MaterialApp(
       title: 'Timer App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Color.lerp(
+            timerState.currentColor,
+            timerState.nextColor,
+            1.0 - timerState.colorTransition,
+          ) ?? timerState.currentColor,
+        ),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Timer App'),
@@ -40,8 +47,20 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
       ),
-      body: Center(
-        child: Column(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Consumer<TimerState>(
@@ -79,7 +98,7 @@ class MyHomePage extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }
