@@ -1,17 +1,66 @@
-# timer_app
+# Analog Timer
 
-A new Flutter project.
+美しいアナログ時計インターフェースを持つシンプルなタイマーアプリ。
 
-## Getting Started
+## 機能
 
-This project is a starting point for a Flutter application.
+- 最大60分までのタイマー設定
+- アナログ時計風のインターフェース
+- アラーム機能
+- シンプルで直感的な操作
 
-A few resources to get you started if this is your first Flutter project:
+## 開発環境のセットアップ
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. 必要な依存関係をインストール:
+```bash
+flutter pub get
+bundle install
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# feel_time
+2. iOSシミュレータで実行:
+```bash
+flutter run
+```
+
+## アプリストアへのデプロイ
+
+### 前提条件
+
+- Apple Developer Program アカウント
+- Google Play Developer アカウント
+- Fastlaneのインストール
+- 必要な証明書とプロビジョニングプロファイル
+
+### デプロイ手順
+
+#### iOS
+
+1. TestFlightへのベータ配布:
+```bash
+fastlane ios beta
+```
+
+2. App Storeへのリリース:
+```bash
+fastlane ios release
+```
+
+#### Android
+
+1. Play Storeベータトラックへの配布:
+```bash
+fastlane android beta
+```
+
+2. Play Store本番トラックへのリリース:
+```bash
+fastlane android release
+```
+
+## プライバシーポリシー
+
+プライバシーポリシーは[こちら](privacy_policy.md)をご覧ください。
+
+## ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。

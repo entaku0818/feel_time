@@ -1,0 +1,9 @@
+Analog Timer is a simple and elegant timer app featuring a beautiful analog clock interface.
+
+Key Features:
+• Timer settings up to 60 minutes
+• Analog clock-style interface
+• Alarm functionality
+• Simple and intuitive controls
+
+Perfect for cooking, exercise, work time management, and various other daily activities.

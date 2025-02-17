@@ -1,0 +1,99 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    setup_ci if ENV['CI']
+    
+    # Increment build number
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1,
+      xcodeproj: "ios/Runner.xcodeproj"
+    )
+    
+    # Build the app
+    build_ios_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "build/ios",
+      output_name: "analog-timer.ipa"
+    )
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Push a new release build to the App Store"
+  lane :release do
+    setup_ci if ENV['CI']
+    
+    # Capture screenshots
+    capture_screenshots
+    
+    # Build and upload to App Store
+    build_ios_app(
+      workspace: "ios/Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "build/ios",
+      output_name: "analog-timer.ipa"
+    )
+    
+    # Upload to App Store
+    upload_to_app_store(
+      force: true,
+      skip_screenshots: false,
+      skip_metadata: false,
+      precheck_include_in_app_purchases: false
+    )
+  end
+end
+
+platform :android do
+  desc "Push a new beta build to Google Play"
+  lane :beta do
+    setup_ci if ENV['CI']
+    
+    # Increment version code
+    increment_version_code(
+      gradle_file_path: "android/app/build.gradle.kts"
+    )
+    
+    # Build the app
+    gradle(
+      task: "clean assembleRelease",
+      project_dir: "android/"
+    )
+    
+    # Upload to Google Play
+    upload_to_play_store(
+      track: "beta",
+      aab: "build/app/outputs/bundle/release/app-release.aab"
+    )
+  end
+
+  desc "Push a new release build to Google Play"
+  lane :release do
+    setup_ci if ENV['CI']
+    
+    # Capture screenshots
+    capture_screenshots
+    
+    # Build the app
+    gradle(
+      task: "clean bundleRelease",
+      project_dir: "android/"
+    )
+    
+    # Upload to Google Play
+    upload_to_play_store(
+      track: "production",
+      aab: "build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_screenshots: false,
+      skip_upload_metadata: false
+    )
+  end
+end
