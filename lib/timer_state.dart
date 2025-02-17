@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class TimerState extends ChangeNotifier {
   // Color configurations
@@ -13,15 +14,19 @@ class TimerState extends ChangeNotifier {
   
   int _colorIndex = 0;
   double _colorTransition = 0.0; // 0.0 to 1.0 for smooth transition
+  static const int _maxDuration = 60 * 60; // 60 minutes in seconds
   static const int _defaultDuration = 25 * 60; // 25 minutes in seconds
   
   Timer? _timer;
   int _currentDuration = _defaultDuration;
   bool _isRunning = false;
+  bool _isAlarmEnabled = false;
+  final audioPlayer = AudioPlayer();
 
   // Getters
   int get currentDuration => _currentDuration;
   bool get isRunning => _isRunning;
+  bool get isAlarmEnabled => _isAlarmEnabled;
   Color get currentColor => _colors[_colorIndex];
   Color get nextColor => _colors[(_colorIndex + 1) % _colors.length];
   double get colorTransition => _colorTransition;
@@ -76,6 +81,33 @@ class TimerState extends ChangeNotifier {
       notifyListeners();
     } else {
       stop();
+      if (_isAlarmEnabled) {
+        _playAlarm();
+      }
+    }
+  }
+
+  // Set duration in minutes
+  void setDuration(int minutes) {
+    if (minutes > 0 && minutes <= 60) {
+      stop();
+      _currentDuration = minutes * 60;
+      notifyListeners();
+    }
+  }
+
+  // Toggle alarm
+  void toggleAlarm() {
+    _isAlarmEnabled = !_isAlarmEnabled;
+    notifyListeners();
+  }
+
+  // Play alarm sound
+  void _playAlarm() async {
+    try {
+      await audioPlayer.play(AssetSource('alarm.mp3'));
+    } catch (e) {
+      debugPrint('Error playing alarm: $e');
     }
   }
 

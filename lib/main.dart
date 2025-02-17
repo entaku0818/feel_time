@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'timer_state.dart';
+import 'clock_painters.dart';
 
 void main() {
   runApp(
@@ -59,46 +60,115 @@ class MyHomePage extends StatelessWidget {
             ],
           ),
         ),
-        child: Center(
-          child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Consumer<TimerState>(
-              builder: (context, timerState, child) {
-                return Text(
-                  timerState.displayTime,
-                  style: Theme.of(context).textTheme.displayLarge,
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Consumer<TimerState>(
-                  builder: (context, timerState, child) {
-                    return ElevatedButton(
-                      onPressed: timerState.isRunning ? timerState.stop : timerState.start,
-                      child: Icon(
-                        timerState.isRunning ? Icons.pause : Icons.play_arrow,
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Clock face
+                    Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 4,
+                        ),
                       ),
-                    );
-                  },
+                      child: CustomPaint(
+                        painter: ClockFacePainter(context),
+                      ),
+                    ),
+                    // Clock hands
+                    Consumer<TimerState>(
+                      builder: (context, timerState, child) {
+                        return CustomPaint(
+                          painter: ClockHandsPainter(
+                            context,
+                            timerState.currentDuration,
+                          ),
+                          size: const Size(300, 300),
+                        );
+                      },
+                    ),
+                    // Digital time display
+                    Consumer<TimerState>(
+                      builder: (context, timerState, child) {
+                        return Text(
+                          timerState.displayTime,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 20),
-                Consumer<TimerState>(
-                  builder: (context, timerState, child) {
-                    return ElevatedButton(
-                      onPressed: timerState.reset,
-                      child: const Icon(Icons.refresh),
-                    );
-                  },
-                ),
-              ],
+              ),
+            ),
+            // Controls
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // Duration slider
+                  Consumer<TimerState>(
+                    builder: (context, timerState, child) {
+                      return Slider(
+                        value: timerState.currentDuration / 60,
+                        max: 60,
+                        divisions: 60,
+                        label: '${(timerState.currentDuration / 60).round()} min',
+                        onChanged: (value) => timerState.setDuration(value.round()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Consumer<TimerState>(
+                        builder: (context, timerState, child) {
+                          return ElevatedButton(
+                            onPressed: timerState.isRunning ? timerState.stop : timerState.start,
+                            child: Icon(
+                              timerState.isRunning ? Icons.pause : Icons.play_arrow,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      Consumer<TimerState>(
+                        builder: (context, timerState, child) {
+                          return ElevatedButton(
+                            onPressed: timerState.reset,
+                            child: const Icon(Icons.refresh),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      Consumer<TimerState>(
+                        builder: (context, timerState, child) {
+                          return ElevatedButton(
+                            onPressed: timerState.toggleAlarm,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: timerState.isAlarmEnabled
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                            child: const Icon(Icons.alarm),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      )),
+      ),
     );
   }
 }
