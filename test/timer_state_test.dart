@@ -1,11 +1,35 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:timer_app/timer_state.dart';
+import 'package:analog_timer/timer_state.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+class MockAudioPlayer extends AudioPlayer {
+  MockAudioPlayer() : super();
+
+  @override
+  Future<void> _create() async {
+    // モックの実装では何もしない
+  }
+
+  @override
+  Future<void> play(Source source, {
+    double? balance,
+    AudioContext? ctx,
+    PlayerMode? mode,
+    Duration? position,
+    double? volume,
+  }) async {
+    // モックの実装では何もしない
+  }
+}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late TimerState timerState;
+  late MockAudioPlayer mockAudioPlayer;
 
   setUp(() {
-    timerState = TimerState();
+    mockAudioPlayer = MockAudioPlayer();
+    timerState = TimerState(audioPlayer: mockAudioPlayer);
   });
 
   tearDown(() {
@@ -52,14 +76,14 @@ void main() {
 
     for (final testCase in testCases) {
       timerState.stop();
-      timerState = TimerState();
+      timerState = TimerState(audioPlayer: mockAudioPlayer);
       timerState.setDurationForTesting(testCase['seconds'] as int);
       expect(timerState.displayTime, equals(testCase['expected']));
     }
   });
 
   test('timer should stop at 0', () {
-    timerState = TimerState();
+    timerState = TimerState(audioPlayer: mockAudioPlayer);
     // Set duration to 1 second
     timerState.setDurationForTesting(1);
     timerState.start();

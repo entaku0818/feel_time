@@ -8,15 +8,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:timer_app/main.dart';
-import 'package:timer_app/timer_state.dart';
+import 'package:analog_timer/main.dart';
+import 'package:analog_timer/timer_state.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+class MockAudioPlayer extends AudioPlayer {
+  MockAudioPlayer() : super();
+
+  @override
+  Future<void> _create() async {
+    // モックの実装では何もしない
+  }
+
+  @override
+  Future<void> play(Source source, {
+    double? balance,
+    AudioContext? ctx,
+    PlayerMode? mode,
+    Duration? position,
+    double? volume,
+  }) async {
+    // モックの実装では何もしない
+  }
+}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('Timer UI test', (WidgetTester tester) async {
+    final mockAudioPlayer = MockAudioPlayer();
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       ChangeNotifierProvider(
-        create: (context) => TimerState(),
+        create: (context) => TimerState(audioPlayer: mockAudioPlayer),
         child: const MyApp(),
       ),
     );

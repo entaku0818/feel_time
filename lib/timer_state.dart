@@ -21,7 +21,9 @@ class TimerState extends ChangeNotifier {
   int _currentDuration = _defaultDuration;
   bool _isRunning = false;
   bool _isAlarmEnabled = false;
-  final audioPlayer = AudioPlayer();
+  final AudioPlayer audioPlayer;
+
+  TimerState({AudioPlayer? audioPlayer}) : audioPlayer = audioPlayer ?? AudioPlayer();
 
   // Getters
   int get currentDuration => _currentDuration;
