@@ -16,6 +16,10 @@ languages([
 # The name of the scheme which contains the UI Tests
 scheme("Runner")
 
+# Specify the path to your workspace
+workspace("ios/Runner.xcworkspace")
+
+
 # Where should the resulting screenshots be stored?
 output_directory("./fastlane/screenshots")
 
