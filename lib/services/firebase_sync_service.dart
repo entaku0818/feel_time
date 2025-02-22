@@ -29,7 +29,7 @@ class FirebaseSyncService {
     final snapshot = await doc.collection('settings').doc('theme').get();
     if (!snapshot.exists) return null;
 
-    return ThemeSettings.fromJson(snapshot.data()!);
+    return ThemeSettings.fromJson(snapshot.data() as Map<String, dynamic>);
   }
 
   // 学習記録の同期
@@ -56,7 +56,7 @@ class FirebaseSyncService {
 
     final snapshot = await doc.collection('study_records').get();
     return snapshot.docs
-        .map((doc) => StudyRecord.fromJson(doc.data()))
+        .map((doc) => StudyRecord.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
 
@@ -74,7 +74,7 @@ class FirebaseSyncService {
         .get();
 
     return snapshot.docs
-        .map((doc) => StudyRecord.fromJson(doc.data()))
+        .map((doc) => StudyRecord.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
 
@@ -84,7 +84,8 @@ class FirebaseSyncService {
     if (doc == null) return false;
 
     final snapshot = await doc.get();
-    return snapshot.data()?['isPremium'] ?? false;
+    final data = snapshot.data() as Map<String, dynamic>?;
+    return data?['isPremium'] ?? false;
   }
 
   // プレミアムステータスの更新
@@ -102,7 +103,7 @@ class FirebaseSyncService {
 
     return doc.collection('study_records').snapshots().map((snapshot) =>
         snapshot.docs
-            .map((doc) => StudyRecord.fromJson(doc.data()))
+            .map((doc) => StudyRecord.fromJson(doc.data() as Map<String, dynamic>))
             .toList());
   }
 }
