@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
+import 'models/premium_state.dart';
+import 'models/study_record.dart';
 
 class TimerState extends ChangeNotifier {
   // Color configurations
@@ -22,8 +26,15 @@ class TimerState extends ChangeNotifier {
   bool _isRunning = false;
   bool _isAlarmEnabled = false;
   final AudioPlayer audioPlayer;
+  DateTime? _startTime;
+
+  BuildContext? _context;
 
   TimerState({AudioPlayer? audioPlayer}) : audioPlayer = audioPlayer ?? AudioPlayer();
+
+  void setContext(BuildContext context) {
+    _context = context;
+  }
 
   // Getters
   int get currentDuration => _currentDuration;
@@ -43,6 +54,7 @@ class TimerState extends ChangeNotifier {
   void start() {
     if (!_isRunning) {
       _isRunning = true;
+      _startTime = DateTime.now();
       _timer = Timer.periodic(const Duration(seconds: 1), _timerCallback);
       notifyListeners();
     }
@@ -54,6 +66,7 @@ class TimerState extends ChangeNotifier {
       _isRunning = false;
       _timer?.cancel();
       _timer = null;
+      _saveStudyRecord();
       notifyListeners();
     }
   }
@@ -82,11 +95,42 @@ class TimerState extends ChangeNotifier {
       
       notifyListeners();
     } else {
-      stop();
-      if (_isAlarmEnabled) {
-        _playAlarm();
-      }
+      _onTimerComplete();
     }
+  }
+
+  void _onTimerComplete() {
+    stop();
+    if (_isAlarmEnabled) {
+      _playAlarm();
+    }
+    _saveStudyRecord();
+  }
+
+  void _saveStudyRecord() {
+    if (_context == null || _startTime == null) return;
+
+    final premiumState = Provider.of<PremiumState>(_context!, listen: false);
+    if (!premiumState.isPremium) return;
+
+    final endTime = DateTime.now();
+    final initialDuration = _defaultDuration;
+    final actualDuration = endTime.difference(_startTime!).inMinutes;
+
+    if (actualDuration > 0) {
+      final record = StudyRecord(
+        id: const Uuid().v4(),
+        startTime: _startTime!,
+        endTime: endTime,
+        durationMinutes: actualDuration,
+        category: '集中タイム',
+        note: '目標時間: ${initialDuration ~/ 60}分',
+      );
+
+      premiumState.addStudyRecord(record);
+    }
+
+    _startTime = null;
   }
 
   // Set duration in minutes

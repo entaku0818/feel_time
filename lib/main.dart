@@ -1,37 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'timer_state.dart';
 import 'clock_painters.dart';
+import 'models/premium_state.dart';
+import 'screens/statistics_screen.dart';
+import 'screens/study_records_screen.dart';
+import 'screens/theme_settings_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => TimerState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => TimerState()),
+        ChangeNotifierProvider(create: (context) => PremiumState()),
+      ],
       child: const MyApp(),
     ),
   );
 }
 
+Color _parseColor(String hexColor) {
+  return Color(int.parse(hexColor.replaceFirst('#', ''), radix: 16));
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final timerState = Provider.of<TimerState>(context);
-    return MaterialApp(
-      title: 'Timer App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Color.lerp(
-            timerState.currentColor,
-            timerState.nextColor,
-            1.0 - timerState.colorTransition,
-          ) ?? timerState.currentColor,
-        ),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Timer App'),
+    return Consumer2<TimerState, PremiumState>(
+      builder: (context, timerState, premiumState, child) {
+        final themeColor = premiumState.isPremium
+            ? _parseColor(premiumState.currentTheme.primaryColor)
+            : Color.lerp(
+                timerState.currentColor,
+                timerState.nextColor,
+                1.0 - timerState.colorTransition,
+              ) ?? timerState.currentColor;
+
+        return MaterialApp(
+          title: 'Feel Timer',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: themeColor,
+              brightness: premiumState.isPremium && premiumState.currentTheme.isDark
+                  ? Brightness.dark
+                  : Brightness.light,
+            ),
+            useMaterial3: true,
+          ),
+          home: const MyHomePage(title: 'Feel Timer'),
+        );
+      },
     );
   }
 }
@@ -43,10 +67,70 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TimerStateにcontextを設定
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TimerState>().setContext(context);
+    });
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'theme':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ThemeSettingsScreen(),
+                    ),
+                  );
+                  break;
+                case 'records':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StudyRecordsScreen(),
+                    ),
+                  );
+                  break;
+                case 'statistics':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StatisticsScreen(),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'theme',
+                child: ListTile(
+                  leading: Icon(Icons.palette),
+                  title: Text('テーマ設定'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'records',
+                child: ListTile(
+                  leading: Icon(Icons.book),
+                  title: Text('学習記録'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'statistics',
+                child: ListTile(
+                  leading: Icon(Icons.bar_chart),
+                  title: Text('統計'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
