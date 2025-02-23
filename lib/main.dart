@@ -8,6 +8,8 @@ import 'screens/statistics_screen.dart';
 import 'screens/study_records_screen.dart';
 import 'screens/theme_settings_screen.dart';
 import 'screens/premium_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,11 +18,14 @@ void main() async {
   final premiumState = PremiumState();
   await premiumState.initialize();
   
+  final authService = AuthService();
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => TimerState()),
         ChangeNotifierProvider.value(value: premiumState),
+        ChangeNotifierProvider.value(value: authService),
       ],
       child: const MyApp(),
     ),
@@ -69,8 +74,26 @@ class MyHomePage extends StatelessWidget {
 
   final String title;
 
-  void _handleMenuSelection(BuildContext context, String value) {
+  Future<void> _handleMenuSelection(BuildContext context, String value) async {
     final premiumState = context.read<PremiumState>();
+    final authService = context.read<AuthService>();
+    
+    // ログアウト処理
+    if (value == 'logout') {
+      await authService.signOut();
+      return;
+    }
+
+    // 認証チェック
+    if (!authService.isAuthenticated) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+      );
+      return;
+    }
     
     // プレミアム機能へのアクセス制御
     if (!premiumState.isPremium && 
@@ -120,38 +143,63 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
         actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuSelection(context, value),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'theme',
-                child: ListTile(
-                  leading: Icon(Icons.palette),
-                  title: Text('テーマ設定'),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'records',
-                child: ListTile(
-                  leading: Icon(Icons.book),
-                  title: Text('学習記録'),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'statistics',
-                child: ListTile(
-                  leading: Icon(Icons.bar_chart),
-                  title: Text('統計'),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'premium',
-                child: ListTile(
-                  leading: Icon(Icons.star),
-                  title: Text('プレミアム'),
-                ),
-              ),
-            ],
+          Consumer<AuthService>(
+            builder: (context, auth, child) {
+              if (auth.isAuthenticated) {
+                return PopupMenuButton<String>(
+                  onSelected: (value) => _handleMenuSelection(context, value),
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'theme',
+                      child: ListTile(
+                        leading: Icon(Icons.palette),
+                        title: Text('テーマ設定'),
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'records',
+                      child: ListTile(
+                        leading: Icon(Icons.book),
+                        title: Text('学習記録'),
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'statistics',
+                      child: ListTile(
+                        leading: Icon(Icons.bar_chart),
+                        title: Text('統計'),
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'premium',
+                      child: ListTile(
+                        leading: Icon(Icons.star),
+                        title: Text('プレミアム'),
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'logout',
+                      child: ListTile(
+                        leading: Icon(Icons.logout),
+                        title: Text('ログアウト'),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return IconButton(
+                  icon: const Icon(Icons.login),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                );
+              }
+            },
           ),
         ],
       ),

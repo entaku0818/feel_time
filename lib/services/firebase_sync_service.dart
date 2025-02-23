@@ -3,6 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/study_record.dart';
 import '../models/theme_settings.dart';
 
+// TODO: Firestore設定
+// 1. Firebase Console (https://console.firebase.google.com/)
+//    - Firestore Databaseを作成
+//    - セキュリティルールを適用（firestore.rules）
+//    - インデックスの作成
+//      - study_records: startTime（昇順）
+//      - study_records: category（昇順）, durationMinutes（降順）
+// 2. 本番環境の準備
+//    - 適切なロケーションの選択
+//    - スケーリング設定の確認
+//    - バックアップ設定
+
 class FirebaseSyncService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;

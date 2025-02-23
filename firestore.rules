@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ユーザーが認証済みかどうかをチェック
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // リクエストのユーザーIDとドキュメントのユーザーIDが一致するかチェック
+    function isUserOwned() {
+      return request.auth.uid == resource.data.userId;
+    }
+
+    // プレミアムユーザーかどうかをチェック
+    function isPremiumUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isPremium == true;
+    }
+
+    // ユーザードキュメント
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // テーマ設定
+    match /users/{userId}/settings/theme {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && isPremiumUser();
+    }
+
+    // 学習記録
+    match /users/{userId}/study_records/{recordId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && request.auth.uid == userId && isPremiumUser();
+    }
+  }
+}
