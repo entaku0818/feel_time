@@ -7,16 +7,20 @@ import 'models/premium_state.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/study_records_screen.dart';
 import 'screens/theme_settings_screen.dart';
+import 'screens/premium_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   
+  final premiumState = PremiumState();
+  await premiumState.initialize();
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => TimerState()),
-        ChangeNotifierProvider(create: (context) => PremiumState()),
+        ChangeNotifierProvider.value(value: premiumState),
       ],
       child: const MyApp(),
     ),
@@ -65,6 +69,45 @@ class MyHomePage extends StatelessWidget {
 
   final String title;
 
+  void _handleMenuSelection(BuildContext context, String value) {
+    final premiumState = context.read<PremiumState>();
+    
+    // プレミアム機能へのアクセス制御
+    if (!premiumState.isPremium && 
+        (value == 'theme' || value == 'records' || value == 'statistics')) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PremiumScreen(),
+        ),
+      );
+      return;
+    }
+
+    Widget? screen;
+    switch (value) {
+      case 'theme':
+        screen = const ThemeSettingsScreen();
+        break;
+      case 'records':
+        screen = const StudyRecordsScreen();
+        break;
+      case 'statistics':
+        screen = const StatisticsScreen();
+        break;
+      case 'premium':
+        screen = const PremiumScreen();
+        break;
+    }
+
+    if (screen != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => screen!),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // TimerStateにcontextを設定
@@ -78,34 +121,7 @@ class MyHomePage extends StatelessWidget {
         title: Text(title),
         actions: [
           PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'theme':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ThemeSettingsScreen(),
-                    ),
-                  );
-                  break;
-                case 'records':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const StudyRecordsScreen(),
-                    ),
-                  );
-                  break;
-                case 'statistics':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const StatisticsScreen(),
-                    ),
-                  );
-                  break;
-              }
-            },
+            onSelected: (value) => _handleMenuSelection(context, value),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               const PopupMenuItem<String>(
                 value: 'theme',
@@ -126,6 +142,13 @@ class MyHomePage extends StatelessWidget {
                 child: ListTile(
                   leading: Icon(Icons.bar_chart),
                   title: Text('統計'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'premium',
+                child: ListTile(
+                  leading: Icon(Icons.star),
+                  title: Text('プレミアム'),
                 ),
               ),
             ],

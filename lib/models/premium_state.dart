@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'theme_settings.dart';
 import 'study_record.dart';
+import '../services/purchase_service.dart';
 
 class PremiumState extends ChangeNotifier {
   bool _isPremium = false;
   ThemeSettings _currentTheme;
   List<StudyRecord> _studyRecords = [];
   bool _isSyncing = false;
+  final PurchaseService _purchaseService = PurchaseService();
+  bool _isInitialized = false;
 
   PremiumState()
       : _currentTheme = ThemeSettings(
@@ -22,10 +26,52 @@ class PremiumState extends ChangeNotifier {
   List<StudyRecord> get studyRecords => List.unmodifiable(_studyRecords);
   bool get isSyncing => _isSyncing;
 
+  // 初期化
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    await _purchaseService.initialize();
+    await _loadPremiumStatus();
+    _isInitialized = true;
+  }
+
   // Premium status
-  void setPremiumStatus(bool status) {
+  Future<void> setPremiumStatus(bool status) async {
     _isPremium = status;
     notifyListeners();
+  }
+
+  Future<void> _loadPremiumStatus() async {
+    final status = await _purchaseService.checkPremiumStatus();
+    await setPremiumStatus(status);
+  }
+
+  // 購入処理
+  Future<bool> purchasePackage(Package package) async {
+    final success = await _purchaseService.purchasePackage(package);
+    if (success) {
+      await setPremiumStatus(true);
+    }
+    return success;
+  }
+
+  // 購入の復元
+  Future<bool> restorePurchases() async {
+    final success = await _purchaseService.restorePurchases();
+    if (success) {
+      await setPremiumStatus(true);
+    }
+    return success;
+  }
+
+  // 商品情報の取得
+  Future<List<Package>> getOfferings() async {
+    return _purchaseService.getOfferings();
+  }
+
+  // ユーザーIDの設定
+  Future<void> setUserId(String userId) async {
+    await _purchaseService.setUserId(userId);
+    await _loadPremiumStatus();
   }
 
   // Theme management
