@@ -1,7 +1,19 @@
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 class PurchaseService {
-  static const String _apiKey = 'YOUR_REVENUECAT_API_KEY'; // TODO: Replace with actual API key
+  // TODO: RevenueCat設定
+  // 1. RevenueCat Dashboard (https://app.revenuecat.com/)
+  //    - プロジェクトを作成
+  //    - アプリを登録（iOS/Android）
+  //    - エンタイトルメント「premium」を作成
+  //    - 商品を設定（月額・年額プラン）
+  // 2. App Store Connect
+  //    - アプリ内課金の設定
+  //    - サブスクリプション商品の登録
+  // 3. Google Play Console
+  //    - サブスクリプション商品の設定
+  //    - アプリ内課金の有効化
+  static const String _apiKey = 'YOUR_REVENUECAT_API_KEY';
   static const String _monthlySubscriptionId = 'premium_monthly';
   static const String _yearlySubscriptionId = 'premium_yearly';
 
