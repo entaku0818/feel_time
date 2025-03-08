@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:flutter_driver/flutter_driver.dart' as driver;
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,16 @@ void main() {
     // スクリーンショットコントローラーの初期化
     final screenshotController = ScreenshotController();
     
+    // デバイス名を取得（環境変数から）
+    final driver.FlutterDriver driverInstance = await driver.FlutterDriver.connect();
+    String deviceName = await driverInstance.requestData('');
+    print('Device name: $deviceName');
+    
+    // デバイス名が空の場合はデフォルト値を使用
+    if (deviceName.isEmpty) {
+      deviceName = 'unknown_device';
+    }
+    
     // スクリーンショット保存ディレクトリの設定
     final directory = await getApplicationDocumentsDirectory();
     final screenshotsDir = Directory('${directory.path}/screenshots');
@@ -47,24 +58,27 @@ void main() {
       // 現在のウィジェットツリーからスクリーンショットを撮影
       final image = await screenshotController.captureFromWidget(
         MaterialApp(
-          home: MediaQuery(
-            data: const MediaQueryData(size: Size(1080, 1920)),
-            child: Builder(
-              builder: (context) => Directionality(
-                textDirection: TextDirection.ltr,
-                child: tester.firstWidget(find.byType(MaterialApp)),
-              ),
+          home: Builder(
+            builder: (context) => Directionality(
+              textDirection: TextDirection.ltr,
+              child: tester.firstWidget(find.byType(MaterialApp)),
             ),
           ),
         ),
         delay: const Duration(milliseconds: 100),
+        pixelRatio: 3.0, // 高解像度のスクリーンショットを撮影
       );
       
-      // ファイルに保存
-      final file = File('${screenshotsDir.path}/$name.png');
+      // ファイル名にデバイス名を含める
+      final file = File('${screenshotsDir.path}/${deviceName}_$name.png');
       await file.writeAsBytes(image);
       print('Screenshot saved: ${file.path}');
     }
+    
+    // テスト終了時にドライバーを閉じる
+    addTearDown(() async {
+      await driverInstance.close();
+    });
     
     // アプリをビルドして初期化
     await tester.pumpWidget(

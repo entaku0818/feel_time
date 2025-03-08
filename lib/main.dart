@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_driver/driver_extension.dart';
 import 'timer_state.dart';
 import 'clock_painters.dart';
 import 'models/premium_state.dart';
@@ -13,6 +14,12 @@ import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Enable Flutter Driver extension with handler to return device name
+  enableFlutterDriverExtension(handler: (request) async {
+    return const String.fromEnvironment('DEVICE');
+  });
+  
   await Firebase.initializeApp();
   
   final premiumState = PremiumState();
