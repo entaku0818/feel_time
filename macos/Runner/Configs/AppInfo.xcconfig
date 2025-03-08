@@ -8,7 +8,7 @@
 PRODUCT_NAME = timer_app
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.timerApp
+PRODUCT_BUNDLE_IDENTIFIER = com.entaku.feeltimer
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.

@@ -47,5 +47,16 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access to play alarm sounds</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.780065394124</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
