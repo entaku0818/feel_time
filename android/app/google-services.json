@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "780065394124",
+    "project_id": "feel-timer-app",
+    "storage_bucket": "feel-timer-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780065394124:android:c9b97c8cb1e1149f42a169",
+        "android_client_info": {
+          "package_name": "com.entaku.timer_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzJiLej8ApH7us6qDBFyfq6dgHu4HF3w0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
