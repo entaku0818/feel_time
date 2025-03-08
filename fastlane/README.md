@@ -31,6 +31,14 @@ Push a new beta build to TestFlight
 
 Push a new release build to the App Store
 
+### ios flutter_screenshots
+
+```sh
+[bundle exec] fastlane ios flutter_screenshots
+```
+
+Generate screenshots using Flutter integration tests
+
 ----
 
 
@@ -43,6 +51,14 @@ Push a new release build to the App Store
 ```
 
 Push a new beta build to Google Play
+
+### android flutter_screenshots
+
+```sh
+[bundle exec] fastlane android flutter_screenshots
+```
+
+Generate screenshots using Flutter integration tests
 
 ### android release
 

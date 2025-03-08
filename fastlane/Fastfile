@@ -47,6 +47,23 @@ platform :ios do
       precheck_include_in_app_purchases: false
     )
   end
+  
+  desc "Generate screenshots using Flutter integration tests"
+  lane :flutter_screenshots do
+    # Flutterテストを実行
+    sh("cd .. && flutter test integration_test/screenshot_test.dart")
+    
+    # スクリーンショットをFastlaneのディレクトリにコピー
+    # 実際のパスはデバイスによって異なる場合があります
+    UI.important("スクリーンショットが生成されました。以下のコマンドを実行してFastlaneディレクトリにコピーしてください:")
+    UI.important("cd .. && ./scripts/copy_screenshots_to_fastlane.sh [スクリーンショットのパス]")
+    
+    # 例: iOSの場合
+    # UI.important("cd .. && ./scripts/copy_screenshots_to_fastlane.sh ~/Documents/screenshots")
+    
+    # 例: Androidの場合
+    # UI.important("cd .. && ./scripts/copy_screenshots_to_fastlane.sh ~/Downloads/screenshots")
+  end
 end
 
 platform :android do
@@ -72,12 +89,26 @@ platform :android do
     )
   end
 
+  desc "Generate screenshots using Flutter integration tests"
+  lane :flutter_screenshots do
+    # Flutterテストを実行
+    sh("cd .. && flutter test integration_test/screenshot_test.dart")
+    
+    # スクリーンショットをFastlaneのディレクトリにコピー
+    # 実際のパスはデバイスによって異なる場合があります
+    UI.important("スクリーンショットが生成されました。以下のコマンドを実行してFastlaneディレクトリにコピーしてください:")
+    UI.important("cd .. && ./scripts/copy_screenshots_to_fastlane.sh [スクリーンショットのパス]")
+    
+    # 例: Androidの場合
+    # UI.important("cd .. && ./scripts/copy_screenshots_to_fastlane.sh ~/Downloads/screenshots")
+  end
+  
   desc "Push a new release build to Google Play"
   lane :release do
     setup_ci if ENV['CI']
     
     # Capture screenshots
-    capture_screenshots
+    # capture_screenshots
     
     # Build the app
     gradle(

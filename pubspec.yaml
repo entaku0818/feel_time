@@ -51,6 +51,12 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  
+  # スクリーンショット用の追加パッケージ
+  integration_test:
+    sdk: flutter
+  screenshot: ^2.1.0  # スクリーンショット撮影用
+  path_provider: ^2.1.1  # ファイルパス取得用
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
