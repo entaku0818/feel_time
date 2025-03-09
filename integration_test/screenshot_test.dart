@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:analog_timer/main.dart';
 import 'package:analog_timer/timer_state.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/rendering.dart';
 
 // モックオーディオプレーヤー
 class MockAudioPlayer extends AudioPlayer {
@@ -66,6 +67,7 @@ void main() {
           ),
         ),
         delay: const Duration(milliseconds: 100),
+        targetSize: const Size(1080, 1920), // スクリーンショットのサイズを指定
         pixelRatio: 3.0, // 高解像度のスクリーンショットを撮影
       );
       

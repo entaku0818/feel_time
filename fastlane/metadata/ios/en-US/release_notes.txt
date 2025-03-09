@@ -1,0 +1,9 @@
+Initial release of Analog Timer.
+
+• Beautiful analog clock interface
+• Timer settings up to 60 minutes
+• Alarm functionality
+• Study time tracking
+• Statistics to monitor your progress
+• Customizable themes
+• Cloud synchronization across devices
