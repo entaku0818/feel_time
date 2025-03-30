@@ -65,23 +65,54 @@ class MyApp extends StatelessWidget {
                 1.0 - timerState.colorTransition,
               ) ?? timerState.currentColor;
 
+        final isDarkMode = premiumState.isPremium && premiumState.currentTheme.isDark;
+        final brightness = isDarkMode ? Brightness.dark : Brightness.light;
+        
+        // 背景色の取得
+        final backgroundColor = premiumState.isPremium 
+            ? _parseColor(premiumState.currentTheme.backgroundColor)
+            : (isDarkMode ? Colors.grey[900] : Colors.white);
+            
+        // セカンダリカラーの取得
+        final secondaryColor = premiumState.isPremium
+            ? _parseColor(premiumState.currentTheme.secondaryColor)
+            : themeColor.withBlue((themeColor.blue + 40) % 255);
+
         return MaterialApp(
           title: 'Feel Timer',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: themeColor,
-              brightness: premiumState.isPremium && premiumState.currentTheme.isDark
-                  ? Brightness.dark
-                  : Brightness.light,
+              primary: themeColor,
+              secondary: secondaryColor,
+              background: backgroundColor,
+              brightness: brightness,
             ),
+            scaffoldBackgroundColor: backgroundColor,
             appBarTheme: AppBarTheme(
-              backgroundColor: ColorScheme.fromSeed(
-                seedColor: themeColor,
-                brightness: premiumState.isPremium && premiumState.currentTheme.isDark
-                    ? Brightness.dark
-                    : Brightness.light,
-              ).inversePrimary,
+              backgroundColor: brightness == Brightness.dark 
+                  ? themeColor.withOpacity(0.8) 
+                  : ColorScheme.fromSeed(
+                      seedColor: themeColor,
+                      brightness: brightness,
+                    ).inversePrimary,
+              foregroundColor: brightness == Brightness.dark ? Colors.white : null,
               elevation: 4.0,
+            ),
+            cardTheme: CardTheme(
+              color: brightness == Brightness.dark 
+                  ? Colors.grey[850] 
+                  : Colors.white,
+            ),
+            dialogTheme: DialogTheme(
+              backgroundColor: brightness == Brightness.dark 
+                  ? Colors.grey[850] 
+                  : Colors.white,
+            ),
+            bottomAppBarTheme: BottomAppBarTheme(
+              color: brightness == Brightness.dark 
+                  ? Colors.grey[850] 
+                  : Colors.white,
             ),
             useMaterial3: true,
           ),
@@ -164,8 +195,10 @@ class MyHomePage extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withOpacity(
+                    Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.1),
+              Theme.of(context).colorScheme.secondary.withOpacity(
+                    Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.1),
             ],
           ),
         ),
@@ -208,7 +241,12 @@ class MyHomePage extends StatelessWidget {
                       builder: (context, timerState, child) {
                         return Text(
                           timerState.displayTime,
-                          style: Theme.of(context).textTheme.headlineMedium,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.white.withOpacity(0.9)
+                                : Theme.of(context).textTheme.headlineMedium?.color,
+                            fontWeight: FontWeight.bold,
+                          ),
                         );
                       },
                     ),

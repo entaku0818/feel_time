@@ -10,8 +10,12 @@ class ClockFacePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = min(size.width, size.height) / 2;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     final paint = Paint()
-      ..color = Theme.of(context).colorScheme.primary
+      ..color = isDarkMode 
+          ? Theme.of(context).colorScheme.primary.withOpacity(0.8)
+          : Theme.of(context).colorScheme.primary
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
@@ -36,6 +40,10 @@ class ClockFacePainter extends CustomPainter {
       textAlign: TextAlign.center,
     );
 
+    final textColor = isDarkMode 
+        ? Theme.of(context).colorScheme.primary.withOpacity(0.9)
+        : Theme.of(context).colorScheme.primary;
+
     for (int i = 5; i <= 60; i += 5) {
       final angle = i * (2 * pi / 60) - pi / 2;
       final textRadius = radius - 35;
@@ -47,7 +55,7 @@ class ClockFacePainter extends CustomPainter {
       textPaint.text = TextSpan(
         text: i.toString(),
         style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+          color: textColor,
           fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
@@ -74,6 +82,7 @@ class ClockHandsPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = min(size.width, size.height) / 2;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // Calculate angles
     final totalMinutes = remainingSeconds / 60;
@@ -82,7 +91,9 @@ class ClockHandsPainter extends CustomPainter {
 
     // Draw minute hand
     final minuteHandPaint = Paint()
-      ..color = Theme.of(context).colorScheme.primary
+      ..color = isDarkMode
+          ? Theme.of(context).colorScheme.primary.withOpacity(0.9)
+          : Theme.of(context).colorScheme.primary
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 
@@ -94,7 +105,9 @@ class ClockHandsPainter extends CustomPainter {
 
     // Draw second hand
     final secondHandPaint = Paint()
-      ..color = Theme.of(context).colorScheme.secondary
+      ..color = isDarkMode
+          ? Theme.of(context).colorScheme.secondary.withOpacity(0.9)
+          : Theme.of(context).colorScheme.secondary
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
@@ -106,7 +119,9 @@ class ClockHandsPainter extends CustomPainter {
 
     // Draw center dot
     final centerDotPaint = Paint()
-      ..color = Theme.of(context).colorScheme.primary
+      ..color = isDarkMode
+          ? Theme.of(context).colorScheme.primary.withOpacity(0.9)
+          : Theme.of(context).colorScheme.primary
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, 4, centerDotPaint);
   }
