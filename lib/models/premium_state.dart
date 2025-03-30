@@ -3,6 +3,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'theme_settings.dart';
 import 'study_record.dart';
 import '../services/purchase_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PremiumState extends ChangeNotifier {
   bool _isPremium = false;
@@ -11,6 +12,9 @@ class PremiumState extends ChangeNotifier {
   bool _isSyncing = false;
   final PurchaseService _purchaseService = PurchaseService();
   bool _isInitialized = false;
+  
+  // 開発環境では常にプレミアム機能にアクセスできるようにする
+  bool get _devModeEnabled => dotenv.get('DEV_MODE', fallback: 'true') == 'true';
 
   PremiumState()
       : _currentTheme = ThemeSettings(
@@ -21,7 +25,7 @@ class PremiumState extends ChangeNotifier {
         );
 
   // Getters
-  bool get isPremium => _isPremium;
+  bool get isPremium => _devModeEnabled || _isPremium;  // 開発モードの場合は常にtrue
   ThemeSettings get currentTheme => _currentTheme;
   List<StudyRecord> get studyRecords => List.unmodifiable(_studyRecords);
   bool get isSyncing => _isSyncing;
@@ -30,7 +34,9 @@ class PremiumState extends ChangeNotifier {
   Future<void> initialize() async {
     if (_isInitialized) return;
     await _purchaseService.initialize();
-    await _loadPremiumStatus();
+    if (!_devModeEnabled) {
+      await _loadPremiumStatus();
+    }
     _isInitialized = true;
   }
 
@@ -47,6 +53,8 @@ class PremiumState extends ChangeNotifier {
 
   // 購入処理
   Future<bool> purchasePackage(Package package) async {
+    if (_devModeEnabled) return true;
+    
     final success = await _purchaseService.purchasePackage(package);
     if (success) {
       await setPremiumStatus(true);
@@ -56,6 +64,8 @@ class PremiumState extends ChangeNotifier {
 
   // 購入の復元
   Future<bool> restorePurchases() async {
+    if (_devModeEnabled) return true;
+    
     final success = await _purchaseService.restorePurchases();
     if (success) {
       await setPremiumStatus(true);
@@ -70,32 +80,30 @@ class PremiumState extends ChangeNotifier {
 
   // ユーザーIDの設定
   Future<void> setUserId(String userId) async {
+    if (_devModeEnabled) return;
+    
     await _purchaseService.setUserId(userId);
     await _loadPremiumStatus();
   }
 
   // Theme management
   void updateTheme(ThemeSettings newTheme) {
-    if (!_isPremium) return;
     _currentTheme = newTheme;
     notifyListeners();
   }
 
   // Study records management
   void addStudyRecord(StudyRecord record) {
-    if (!_isPremium) return;
     _studyRecords.add(record);
     notifyListeners();
   }
 
   void removeStudyRecord(String id) {
-    if (!_isPremium) return;
     _studyRecords.removeWhere((record) => record.id == id);
     notifyListeners();
   }
 
   void updateStudyRecord(StudyRecord updatedRecord) {
-    if (!_isPremium) return;
     final index = _studyRecords.indexWhere((r) => r.id == updatedRecord.id);
     if (index != -1) {
       _studyRecords[index] = updatedRecord;
