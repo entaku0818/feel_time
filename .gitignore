@@ -48,3 +48,9 @@ fastlane/*.p8
 # Android keystore files
 /android/key.properties
 /android/app/upload-keystore.jks
+
+# dotenv environment variables file
+.env
+.env.development
+.env.test
+.env.production

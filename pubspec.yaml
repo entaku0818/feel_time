@@ -40,6 +40,7 @@ dependencies:
   fl_chart: ^0.65.0
   uuid: ^4.3.3
   purchases_flutter: ^8.6.0
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -73,13 +74,14 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/alarm.mp3
+    - .env
+    - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
+  # https://flutter.dev/assets-and-images/#resolution-aware.
 
   # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
+  # https://flutter.dev/assets-and-images/#from-packages
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
