@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/premium_state.dart';
 import '../models/study_record.dart';
 import 'package:uuid/uuid.dart';
@@ -7,36 +8,125 @@ import 'package:uuid/uuid.dart';
 class StudyRecordsScreen extends StatelessWidget {
   const StudyRecordsScreen({super.key});
 
+  // 開発モードかどうかのチェック
+  bool get _isDevMode => dotenv.get('DEV_MODE', fallback: 'true') == 'true';
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PremiumState>(
       builder: (context, premiumState, child) {
-        if (!premiumState.isPremium) {
-          return const Center(
-            child: Text('この機能はプレミアム会員専用です'),
-          );
-        }
-
         final records = premiumState.studyRecords;
+        
+        // デバッグ情報
+        debugPrint('StudyRecordsScreen: ${records.length}件の記録があります');
+
         return Scaffold(
           appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             title: const Text('学習記録'),
+            elevation: 4.0, // 影をつけて目立たせる
             actions: [
+              // 開発環境の場合のみサンプルデータ再生成ボタンを表示
+              if (_isDevMode)
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'サンプルデータを再生成',
+                  onPressed: () => _recreateSampleData(context),
+                ),
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: () => _showAddEditDialog(context),
               ),
             ],
           ),
-          body: records.isEmpty
-              ? const Center(child: Text('学習記録がありません'))
-              : ListView.builder(
-                  itemCount: records.length,
-                  itemBuilder: (context, index) {
-                    final record = records[index];
-                    return _StudyRecordTile(record: record);
+          body: Column(
+            children: [
+              // 上部に説明バナーを追加
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8.0),
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: Text(
+                  '学習記録：${records.length}件',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              // 実際のリスト
+              Expanded(
+                child: records.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('学習記録がありません'),
+                          if (_isDevMode)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: ElevatedButton(
+                                onPressed: () => _recreateSampleData(context),
+                                child: const Text('サンプルデータを生成'),
+                              ),
+                            ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: records.length,
+                      itemBuilder: (context, index) {
+                        final record = records[index];
+                        return _StudyRecordTile(record: record);
+                      },
+                    ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: BottomAppBar(
+            color: Theme.of(context).colorScheme.surface,
+            elevation: 8.0,
+            shape: const CircularNotchedRectangle(),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.timer),
+                  tooltip: 'タイマー',
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/timer');
                   },
                 ),
+                IconButton(
+                  icon: const Icon(Icons.book),
+                  tooltip: '学習記録',
+                  color: Theme.of(context).colorScheme.primary, // 現在のページを強調表示
+                  onPressed: null, // 現在のページなのでボタンを無効化
+                ),
+                IconButton(
+                  icon: const Icon(Icons.bar_chart),
+                  tooltip: '統計',
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/statistics');
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.palette),
+                  tooltip: 'テーマ設定',
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/themes');
+                  },
+                ),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddEditDialog(context),
+            tooltip: '記録を追加',
+            child: const Icon(Icons.add),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         );
       },
     );
@@ -46,6 +136,35 @@ class StudyRecordsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => _StudyRecordDialog(record: record),
+    );
+  }
+
+  // サンプルデータを再生成する
+  void _recreateSampleData(BuildContext context) {
+    final premiumState = context.read<PremiumState>();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('サンプルデータの再生成'),
+        content: const Text('現在の学習記録をすべて削除して、新しいサンプルデータを生成しますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              premiumState.recreateSampleData();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('サンプルデータを再生成しました')),
+              );
+            },
+            child: const Text('再生成'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -68,7 +187,7 @@ class _StudyRecordTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${_formatDateTime(record.startTime)} - ${_formatDateTime(record.endTime)}',
+              '${_formatDate(record.startTime)} - ${_formatTime(record.startTime)} 〜 ${_formatTime(record.endTime)}',
             ),
             if (record.note != null && record.note!.isNotEmpty)
               Text(
@@ -107,8 +226,12 @@ class _StudyRecordTile extends StatelessWidget {
     );
   }
 
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.month}/${dateTime.day} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime dateTime) {
+    return '${dateTime.month}/${dateTime.day}';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   void _showDeleteConfirmation(BuildContext context) {
@@ -277,11 +400,20 @@ class _StudyRecordDialogState extends State<_StudyRecordDialog> {
       return;
     }
 
+    final durationMinutes = _endTime.difference(_startTime).inMinutes;
+    
+    if (durationMinutes <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('学習時間は1分以上必要です')),
+      );
+      return;
+    }
+
     final record = StudyRecord(
       id: widget.record?.id ?? const Uuid().v4(),
       startTime: _startTime,
       endTime: _endTime,
-      durationMinutes: _endTime.difference(_startTime).inMinutes,
+      durationMinutes: durationMinutes,
       category: _categoryController.text.trim(),
       note: _noteController.text.trim(),
     );

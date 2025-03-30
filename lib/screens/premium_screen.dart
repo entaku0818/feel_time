@@ -174,6 +174,51 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 ),
               ),
             ),
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).colorScheme.surface,
+        elevation: 8.0,
+        shape: const CircularNotchedRectangle(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.timer),
+              tooltip: 'タイマー',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/timer');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.book),
+              tooltip: '学習記録',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/records');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              tooltip: '統計',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/statistics');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.palette),
+              tooltip: 'テーマ設定',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/themes');
+              },
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        tooltip: 'プレミアム',
+        backgroundColor: Colors.amber,
+        child: const Icon(Icons.star),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

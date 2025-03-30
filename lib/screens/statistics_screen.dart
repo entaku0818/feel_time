@@ -44,6 +44,49 @@ class StatisticsScreen extends StatelessWidget {
                 _CategoryStatistics(records: records),
               ],
             ),
+            bottomNavigationBar: BottomAppBar(
+              color: Theme.of(context).colorScheme.surface,
+              elevation: 8.0,
+              shape: const CircularNotchedRectangle(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.timer),
+                    tooltip: 'タイマー',
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/timer');
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.book),
+                    tooltip: '学習記録',
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/records');
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.bar_chart),
+                    tooltip: '統計',
+                    color: Theme.of(context).colorScheme.primary, // 現在のページを強調表示
+                    onPressed: null, // 現在のページなのでボタンを無効化
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.palette),
+                    tooltip: 'テーマ設定',
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/themes');
+                    },
+                  ),
+                ],
+              ),
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () => Navigator.pushReplacementNamed(context, '/records'),
+              tooltip: '学習記録を追加',
+              child: const Icon(Icons.add),
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           ),
         );
       },

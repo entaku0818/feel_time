@@ -74,9 +74,26 @@ class MyApp extends StatelessWidget {
                   ? Brightness.dark
                   : Brightness.light,
             ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: ColorScheme.fromSeed(
+                seedColor: themeColor,
+                brightness: premiumState.isPremium && premiumState.currentTheme.isDark
+                    ? Brightness.dark
+                    : Brightness.light,
+              ).inversePrimary,
+              elevation: 4.0,
+            ),
             useMaterial3: true,
           ),
+          // 初期画面をタイマー画面に変更
           home: const MyHomePage(title: 'Feel Timer'),
+          routes: {
+            '/timer': (context) => const MyHomePage(title: 'Feel Timer'),
+            '/records': (context) => const StudyRecordsScreen(),
+            '/statistics': (context) => const StatisticsScreen(),
+            '/themes': (context) => const ThemeSettingsScreen(),
+            '/premium': (context) => const PremiumScreen(),
+          },
         );
       },
     );
@@ -88,61 +105,9 @@ class MyHomePage extends StatelessWidget {
 
   final String title;
 
-  Future<void> _handleMenuSelection(BuildContext context, String value) async {
-    final premiumState = context.read<PremiumState>();
-    final authService = context.read<AuthService>();
-    
-    // ログアウト処理
-    if (value == 'logout') {
-      await authService.signOut();
-      return;
-    }
-
-    // 認証チェック
-    if (!authService.isAuthenticated) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-      );
-      return;
-    }
-    
-    // プレミアム機能へのアクセス制御
-    if (!premiumState.isPremium && 
-        (value == 'theme' || value == 'records' || value == 'statistics')) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const PremiumScreen(),
-        ),
-      );
-      return;
-    }
-
-    Widget? screen;
-    switch (value) {
-      case 'theme':
-        screen = const ThemeSettingsScreen();
-        break;
-      case 'records':
-        screen = const StudyRecordsScreen();
-        break;
-      case 'statistics':
-        screen = const StatisticsScreen();
-        break;
-      case 'premium':
-        screen = const PremiumScreen();
-        break;
-    }
-
-    if (screen != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => screen!),
-      );
-    }
+  void _handleMenuSelection(BuildContext context, String value) {
+    // 選択されたルートに直接遷移
+    Navigator.pushReplacementNamed(context, '/$value');
   }
 
   @override
@@ -157,63 +122,38 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
         actions: [
-          Consumer<AuthService>(
-            builder: (context, auth, child) {
-              if (auth.isAuthenticated) {
-                return PopupMenuButton<String>(
-                  onSelected: (value) => _handleMenuSelection(context, value),
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'theme',
-                      child: ListTile(
-                        leading: Icon(Icons.palette),
-                        title: Text('テーマ設定'),
-                      ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'records',
-                      child: ListTile(
-                        leading: Icon(Icons.book),
-                        title: Text('学習記録'),
-                      ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'statistics',
-                      child: ListTile(
-                        leading: Icon(Icons.bar_chart),
-                        title: Text('統計'),
-                      ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'premium',
-                      child: ListTile(
-                        leading: Icon(Icons.star),
-                        title: Text('プレミアム'),
-                      ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'logout',
-                      child: ListTile(
-                        leading: Icon(Icons.logout),
-                        title: Text('ログアウト'),
-                      ),
-                    ),
-                  ],
-                );
-              } else {
-                return IconButton(
-                  icon: const Icon(Icons.login),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                );
-              }
-            },
+          PopupMenuButton<String>(
+            onSelected: (value) => _handleMenuSelection(context, value),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'themes',
+                child: ListTile(
+                  leading: Icon(Icons.palette),
+                  title: Text('テーマ設定'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'records',
+                child: ListTile(
+                  leading: Icon(Icons.book),
+                  title: Text('学習記録'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'statistics',
+                child: ListTile(
+                  leading: Icon(Icons.bar_chart),
+                  title: Text('統計'),
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'premium',
+                child: ListTile(
+                  leading: Icon(Icons.star),
+                  title: Text('プレミアム'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -338,6 +278,55 @@ class MyHomePage extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).colorScheme.surface,
+        elevation: 8.0,
+        shape: const CircularNotchedRectangle(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.timer),
+              tooltip: 'タイマー',
+              color: Theme.of(context).colorScheme.primary, // 現在のページを強調表示
+              onPressed: null, // 現在のページなのでボタンを無効化
+            ),
+            IconButton(
+              icon: const Icon(Icons.book),
+              tooltip: '学習記録',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/records');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              tooltip: '統計',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/statistics');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.palette),
+              tooltip: 'テーマ設定',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/themes');
+              },
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: Consumer<TimerState>(
+        builder: (context, timerState, child) {
+          return FloatingActionButton(
+            onPressed: timerState.isRunning ? timerState.stop : timerState.start,
+            tooltip: timerState.isRunning ? '停止' : '開始',
+            child: Icon(
+              timerState.isRunning ? Icons.pause : Icons.play_arrow,
+            ),
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

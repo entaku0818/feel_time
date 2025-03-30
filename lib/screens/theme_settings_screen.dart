@@ -233,6 +233,49 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
           );
         },
       ),
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).colorScheme.surface,
+        elevation: 8.0,
+        shape: const CircularNotchedRectangle(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.timer),
+              tooltip: 'タイマー',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/timer');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.book),
+              tooltip: '学習記録',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/records');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              tooltip: '統計',
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/statistics');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.palette),
+              tooltip: 'テーマ設定',
+              color: Theme.of(context).colorScheme.primary, // 現在のページを強調表示
+              onPressed: null, // 現在のページなのでボタンを無効化
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _saveTheme,
+        tooltip: 'テーマを保存',
+        child: const Icon(Icons.save),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
