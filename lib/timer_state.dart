@@ -110,9 +110,6 @@ class TimerState extends ChangeNotifier {
   void _saveStudyRecord() {
     if (_context == null || _startTime == null) return;
 
-    final premiumState = Provider.of<PremiumState>(_context!, listen: false);
-    if (!premiumState.isPremium) return;
-
     final endTime = DateTime.now();
     final initialDuration = _defaultDuration;
     final actualDuration = endTime.difference(_startTime!).inMinutes;
@@ -127,6 +124,7 @@ class TimerState extends ChangeNotifier {
         note: '目標時間: ${initialDuration ~/ 60}分',
       );
 
+      final premiumState = Provider.of<PremiumState>(_context!, listen: false);
       premiumState.addStudyRecord(record);
     }
 

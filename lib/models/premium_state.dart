@@ -41,6 +41,11 @@ class PremiumState extends ChangeNotifier {
     // まず保存されたデータをロード
     await _loadSavedData();
     
+    // 無料ユーザーの場合は1週間分の記録に制限
+    if (!_devModeEnabled && !_isPremium) {
+      _limitRecordsToOneWeek();
+    }
+    
     // 開発モードかつ記録がない場合はサンプルデータを作成
     if (_devModeEnabled && _studyRecords.isEmpty) {
       _createSampleData();
@@ -52,6 +57,17 @@ class PremiumState extends ChangeNotifier {
       await _loadPremiumStatus();
     }
     _isInitialized = true;
+  }
+
+  // 無料ユーザーの記録を1週間分だけに制限するメソッド
+  void _limitRecordsToOneWeek() {
+    // 現在の日時から1週間前の日時を計算
+    final DateTime oneWeekAgo = DateTime.now().subtract(const Duration(days: 7));
+    
+    // 1週間より古い記録を削除
+    _studyRecords.removeWhere((record) => record.startTime.isBefore(oneWeekAgo));
+    
+    debugPrint('Limited records to last 7 days. ${_studyRecords.length} records remaining.');
   }
 
   // 開発用サンプルデータの作成
@@ -234,6 +250,12 @@ class PremiumState extends ChangeNotifier {
   void addStudyRecord(StudyRecord record) {
     debugPrint('Adding study record: ${record.durationMinutes} minutes');
     _studyRecords.add(record);
+    
+    // 無料ユーザーの場合は1週間分の記録だけに制限
+    if (!isPremium) {
+      _limitRecordsToOneWeek();
+    }
+    
     _saveData(); // 記録を追加したら保存
     notifyListeners();
   }
